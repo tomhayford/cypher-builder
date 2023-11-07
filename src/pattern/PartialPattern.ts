@@ -33,11 +33,21 @@ type LengthOption =
     | { min?: number; max: number }
     | { min: number; max: number };
 
+type QuantifierOption = 
+    | number
+    | "+"
+    | "*"
+    | { min: number; max: number }
+    | { min: number; max?: number }
+    | { min?: number; max: number }
+    | { min?: number; max?: number};
+
 /** Partial pattern, cannot be used until connected to a node
  * @group Patterns
  */
 export class PartialPattern extends PatternElement<RelationshipRef> {
     private length: LengthOption | undefined;
+    private quantifier: QuantifierOption | undefined;
     private withType = true;
     private withVariable = true;
     private direction: "left" | "right" | "undirected" = "right";
@@ -79,6 +89,11 @@ export class PartialPattern extends PatternElement<RelationshipRef> {
         return this;
     }
 
+    public withQuantifier(option: QuantifierOption): this {
+        this.quantifier = option;
+        return this;
+    }
+
     public getVariables(): Variable[] {
         const prevVars = this.previous.getVariables();
 
@@ -98,11 +113,12 @@ export class PartialPattern extends PatternElement<RelationshipRef> {
         const propertiesStr = this.properties ? this.serializeParameters(this.properties, env) : "";
 
         const lengthStr = this.generateLengthStr();
+        const quantifierStr = this.generateQuantifierStr();
 
         const leftArrow = this.direction === "left" ? "<-" : "-";
         const rightArrow = this.direction === "right" ? "->" : "-";
 
-        return `${prevStr}${leftArrow}[${relStr}${typeStr}${lengthStr}${propertiesStr}]${rightArrow}`;
+        return `${prevStr}${leftArrow}[${relStr}${typeStr}${lengthStr}${propertiesStr}]${rightArrow}${quantifierStr}`;
     }
 
     private generateLengthStr(): string {
@@ -113,6 +129,19 @@ export class PartialPattern extends PatternElement<RelationshipRef> {
             return "*";
         } else {
             return `*${this.length.min ?? ""}..${this.length.max ?? ""}`;
+        }
+    }
+
+    private generateQuantifierStr(): string {
+        if (this.quantifier === undefined) return "";
+        if (typeof this.quantifier === "number") {
+            return `{${this.quantifier}}`;
+        } else if (this.quantifier === "*") {
+            return "*";
+        } else if (this.quantifier === "+") {
+            return "+";
+        } else {
+            return `{${this.quantifier.min ?? ""},${this.quantifier.max ?? ""}}`;
         }
     }
 
