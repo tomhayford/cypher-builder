@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+import { start } from "repl";
 import type { Expr } from "..";
 import type { CypherEnvironment } from "../Environment";
 import { LabelExpr } from "../expressions/labels/label-expressions";
@@ -27,19 +28,28 @@ import { escapeLabel } from "../utils/escape";
 import { PartialPattern } from "./PartialPattern";
 import { PatternElement } from "./PatternElement";
 
-/** Represents a pattern of a single node or n-relationships to be used in clauses.
- * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/syntax/patterns/)
- * @group Patterns
- */
+type QuantifierOption =
+    | number
+    | "+"
+    | "*"
+    | { min: number; max: number }
+    | { min: number; max?: number }
+    | { min?: number; max: number }
+    | { min?: number; max?: number };
+
+
 export class Pattern extends PatternElement<NodeRef> {
     private withLabels = true;
     private withVariable = true;
     private previous: PartialPattern | undefined;
+    private isFinal = true
+    public patternQuantifier: QuantifierOption | undefined;
     private properties: Record<string, Expr> | undefined;
 
-    constructor(node: NodeRef, previous?: PartialPattern) {
+    constructor(node: NodeRef, patternQuantifier?: QuantifierOption, previous?: PartialPattern) {
         super(node);
         this.previous = previous;
+        this.patternQuantifier = patternQuantifier;
     }
 
     public withoutLabels(): this {
@@ -59,7 +69,8 @@ export class Pattern extends PatternElement<NodeRef> {
 
     public related(rel?: RelationshipRef): PartialPattern {
         if (!rel) rel = new RelationshipRef();
-        return new PartialPattern(rel, this);
+        this.isFinal = false;
+        return new PartialPattern(rel, this.patternQuantifier, this);
     }
 
     public getVariables(): Variable[] {
@@ -73,14 +84,15 @@ export class Pattern extends PatternElement<NodeRef> {
      * @internal
      */
     public getCypher(env: CypherEnvironment): string {
+        const startParenth = !this.previous ? '(' : "";
+        const endParenth = this.isFinal ? ')' : "";
         const prevStr = this.previous?.getCypher(env) ?? "";
-
         const nodeRefId = this.withVariable ? `${this.element.getCypher(env)}` : "";
-
         const propertiesStr = this.properties ? this.serializeParameters(this.properties, env) : "";
         const nodeLabelStr = this.withLabels ? this.getNodeLabelsString(this.element, env) : "";
+        const quantifierStr = this.isFinal ? this.generateQuantifierStr() : "";
 
-        return `${prevStr}(${nodeRefId}${nodeLabelStr}${propertiesStr})`;
+        return `${startParenth}${prevStr}(${nodeRefId}${nodeLabelStr}${propertiesStr})${endParenth}${quantifierStr}`;
     }
 
     private getNodeLabelsString(node: NodeRef, env: CypherEnvironment): string {
@@ -93,6 +105,18 @@ export class Pattern extends PatternElement<NodeRef> {
             const escapedLabels = labels.map(escapeLabel);
             if (escapedLabels.length === 0) return "";
             return `:${escapedLabels.join(":")}`;
+        }
+    }
+    private generateQuantifierStr(): string {
+        if (this.patternQuantifier === undefined) return "";
+        if (typeof this.patternQuantifier === "number") {
+            return `{${this.patternQuantifier}}`;
+        } else if (this.patternQuantifier === "*") {
+            return "*";
+        } else if (this.patternQuantifier === "+") {
+            return "+";
+        } else {
+            return `{${this.patternQuantifier.min ?? ""},${this.patternQuantifier.max ?? ""}}`;
         }
     }
 }

@@ -33,14 +33,14 @@ type LengthOption =
     | { min?: number; max: number }
     | { min: number; max: number };
 
-type QuantifierOption = 
+type QuantifierOption =
     | number
     | "+"
     | "*"
     | { min: number; max: number }
     | { min: number; max?: number }
     | { min?: number; max: number }
-    | { min?: number; max?: number};
+    | { min?: number; max?: number };
 
 /** Partial pattern, cannot be used until connected to a node
  * @group Patterns
@@ -48,20 +48,23 @@ type QuantifierOption =
 export class PartialPattern extends PatternElement<RelationshipRef> {
     private length: LengthOption | undefined;
     private quantifier: QuantifierOption | undefined;
+    public patternQuantifier: QuantifierOption | undefined;
     private withType = true;
     private withVariable = true;
     private direction: "left" | "right" | "undirected" = "right";
-    private previous: Pattern;
+    public previous: Pattern;
+    public next: Pattern | undefined;
     private properties: RelationshipProperties | undefined;
 
-    constructor(rel: RelationshipRef, previous: Pattern) {
+    constructor(rel: RelationshipRef, patternQuantifier: QuantifierOption | undefined, previous: Pattern) {
         super(rel);
         this.previous = previous;
+        this.patternQuantifier = patternQuantifier;
     }
 
     public to(node?: NodeRef): Pattern {
         if (!node) node = new NodeRef();
-        return new Pattern(node, this);
+        return new Pattern(node, this.patternQuantifier, this);
     }
 
     public withoutType(): this {
