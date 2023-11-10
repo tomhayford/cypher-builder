@@ -13,5 +13,6 @@
         "stripInternal": false, // TODO: Change this after validating output .d.ts
         "noUncheckedIndexedAccess": true
     },
-    "include": ["src/**/*", "tests/**/*", "global.d.ts"]
+    "include": ["src/**/*", "global.d.ts"],
+    "exclude": ["*.test.ts", "tests/**/*"]
 }

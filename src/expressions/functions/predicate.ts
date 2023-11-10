@@ -18,7 +18,7 @@
  */
 
 import type { CypherEnvironment } from "../../Environment";
-import type { Pattern } from "../../pattern/Pattern";
+import type { NodePattern } from "../../pattern/NodePattern";
 import { Where } from "../../clauses/sub-clauses/Where";
 import type { Expr, Predicate } from "../../types";
 import { compileCypherIfExists } from "../../utils/compile-cypher-if-exists";
@@ -55,7 +55,7 @@ export function any(variable: Variable, listExpr: Expr, whereFilter: Predicate):
  * @group Cypher Functions
  * @category Predicate
  */
-export function exists(pattern: Pattern): PredicateFunction {
+export function exists(pattern: NodePattern): PredicateFunction {
     return new ExistsFunction(pattern);
 }
 
@@ -87,9 +87,9 @@ export function single(variable: Variable, listExpr: Expr, whereFilter: Predicat
 }
 
 class ExistsFunction extends PredicateFunction {
-    private pattern: Pattern;
+    private pattern: NodePattern;
 
-    constructor(pattern: Pattern) {
+    constructor(pattern: NodePattern) {
         super("exists");
         this.pattern = pattern;
     }

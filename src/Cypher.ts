@@ -34,13 +34,14 @@ export { concat } from "./clauses/utils/concat";
 
 // Patterns
 export { labelExpr } from "./expressions/labels/label-expressions";
-export { Pattern } from "./pattern/Pattern";
+export { NodePattern } from "./pattern/NodePattern";
+export { PathPattern as Path } from "./pattern/PathPattern";
 
 // Variables and references
 export { Literal, CypherNull as Null, CypherFalse as false, CypherTrue as true } from "./references/Literal";
 export { NamedNode, NodeRef as Node } from "./references/NodeRef";
 export { NamedParam, Param } from "./references/Param";
-export { NamedPath, Path } from "./references/Path";
+export { NamedPath, PathRef } from "./references/PathRef";
 export { PropertyRef as Property } from "./references/PropertyRef";
 export { NamedRelationship, RelationshipRef as Relationship } from "./references/RelationshipRef";
 export { NamedVariable, Variable } from "./references/Variable";

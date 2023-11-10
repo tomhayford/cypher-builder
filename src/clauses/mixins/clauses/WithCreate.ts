@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import type { Pattern } from "../../..";
+import type { NodePattern } from "../../..";
 import { Create } from "../../..";
 import type { NodeRef } from "../../../references/NodeRef";
 import { MixinClause } from "../Mixin";
@@ -27,8 +27,8 @@ export abstract class WithCreate extends MixinClause {
      * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/clauses/create/)
      */
     public create(clause: Create): Create;
-    public create(pattern: NodeRef | Pattern): Create;
-    public create(clauseOrPattern: Create | NodeRef | Pattern): Create {
+    public create(pattern: NodeRef | NodePattern): Create;
+    public create(clauseOrPattern: Create | NodeRef | NodePattern): Create {
         if (clauseOrPattern instanceof Create) {
             this.addNextClause(clauseOrPattern);
             return clauseOrPattern;

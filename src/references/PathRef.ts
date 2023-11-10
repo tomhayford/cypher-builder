@@ -24,7 +24,7 @@ import { Variable } from "./Variable";
  * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/syntax/patterns)
  * @group Variables
  */
-export class Path extends Variable {
+export class PathRef extends Variable {
     constructor() {
         super();
         this.prefix = "p";
@@ -34,7 +34,7 @@ export class Path extends Variable {
 /** For compatibility reasons, represents a path as a variable with the given name
  * @hidden
  */
-export class NamedPath extends Path implements NamedReference {
+export class NamedPath extends PathRef implements NamedReference {
     public readonly id: string;
 
     constructor(name: string) {

@@ -17,18 +17,18 @@
  * limitations under the License.
  */
 
-import type { Path } from "../../references/Path";
+import type { PathRef } from "../../references/PathRef";
 import type { CypherEnvironment } from "../../Environment";
 import { compileCypherIfExists } from "../../utils/compile-cypher-if-exists";
 import { Mixin } from "./Mixin";
 
 export abstract class WithPathAssign extends Mixin {
-    private pathVariable: Path | undefined;
+    private pathVariable: PathRef | undefined;
 
     /** Add a path assignment to the pattern
      * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/syntax/patterns/#cypher-pattern-path-variables)
      */
-    public assignToPath(path: Path): this {
+    public assignToPath(path: PathRef): this {
         this.pathVariable = path;
         return this;
     }

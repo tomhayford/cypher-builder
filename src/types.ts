@@ -80,3 +80,14 @@ export type CypherResult = {
 export interface CypherCompilable {
     getCypher(env: CypherEnvironment): string;
 }
+
+export type CanonicalQuantifier = { min: number; max?: number };
+
+export type QuantifierOption =
+    | number
+    | "+"
+    | "*"
+    | { min: number; max: number }
+    | { min: number; max?: number }
+    | { min?: number; max: number }
+    | { min?: number; max?: number };

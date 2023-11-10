@@ -18,7 +18,7 @@
  */
 
 import type { CypherEnvironment } from "../Environment";
-import { Pattern } from "../pattern/Pattern";
+import { NodePattern } from "../pattern/NodePattern";
 import type { NodeRef } from "../references/NodeRef";
 import { compileCypherIfExists } from "../utils/compile-cypher-if-exists";
 import { Clause } from "./Clause";
@@ -41,16 +41,16 @@ export interface Merge extends WithReturn, WithSet, WithPathAssign, WithDelete, 
  */
 @mixin(WithReturn, WithSet, WithPathAssign, WithDelete, WithRemove, WithWith, WithCreate)
 export class Merge extends Clause {
-    private pattern: Pattern;
+    private pattern: NodePattern;
     private onCreateClause: OnCreate;
 
-    constructor(pattern: NodeRef | Pattern) {
+    constructor(pattern: NodeRef | NodePattern) {
         super();
 
-        if (pattern instanceof Pattern) {
+        if (pattern instanceof NodePattern) {
             this.pattern = pattern;
         } else {
-            this.pattern = new Pattern(pattern);
+            this.pattern = new NodePattern(pattern);
         }
 
         this.onCreateClause = new OnCreate(this);
@@ -66,8 +66,8 @@ export class Merge extends Clause {
      * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/clauses/merge/)
      */
     public merge(clause: Merge): Merge;
-    public merge(pattern: NodeRef | Pattern): Merge;
-    public merge(clauseOrPattern: Merge | NodeRef | Pattern): Merge {
+    public merge(pattern: NodeRef | NodePattern): Merge;
+    public merge(clauseOrPattern: Merge | NodeRef | NodePattern): Merge {
         if (clauseOrPattern instanceof Merge) {
             this.addNextClause(clauseOrPattern);
             return clauseOrPattern;

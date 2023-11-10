@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import type { Pattern } from "../../..";
+import type { NodePattern } from "../../..";
 import { Merge } from "../../..";
 import type { NodeRef } from "../../../references/NodeRef";
 import { MixinClause } from "../Mixin";
@@ -27,8 +27,8 @@ export abstract class WithMerge extends MixinClause {
      * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/clauses/merge/)
      */
     public merge(clause: Merge): Merge;
-    public merge(pattern: NodeRef | Pattern): Merge;
-    public merge(clauseOrPattern: Merge | NodeRef | Pattern): Merge {
+    public merge(pattern: NodeRef | NodePattern): Merge;
+    public merge(clauseOrPattern: Merge | NodeRef | NodePattern): Merge {
         if (clauseOrPattern instanceof Merge) {
             this.addNextClause(clauseOrPattern);
             return clauseOrPattern;

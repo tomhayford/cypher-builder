@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { start } from "repl";
+//import { start } from "repl";
 import type { Expr } from "..";
 import type { CypherEnvironment } from "../Environment";
 import { LabelExpr } from "../expressions/labels/label-expressions";
@@ -25,31 +25,24 @@ import type { NodeRef } from "../references/NodeRef";
 import { RelationshipRef } from "../references/RelationshipRef";
 import type { Variable } from "../references/Variable";
 import { escapeLabel } from "../utils/escape";
-import { PartialPattern } from "./PartialPattern";
-import { PatternElement } from "./PatternElement";
+import { RelationshipPattern } from "./RelationshipPattern";
+import { PathElement } from "./PathElement";
+import type { PathPattern } from "./PathPattern";
 
-type QuantifierOption =
-    | number
-    | "+"
-    | "*"
-    | { min: number; max: number }
-    | { min: number; max?: number }
-    | { min?: number; max: number }
-    | { min?: number; max?: number };
-
-
-export class Pattern extends PatternElement<NodeRef> {
+export class NodePattern extends PathElement<NodeRef> {
     private withLabels = true;
     private withVariable = true;
-    private previous: PartialPattern | undefined;
-    private isFinal = true
-    public patternQuantifier: QuantifierOption | undefined;
+    private previous: RelationshipPattern | undefined;
     private properties: Record<string, Expr> | undefined;
 
-    constructor(node: NodeRef, patternQuantifier?: QuantifierOption, previous?: PartialPattern) {
-        super(node);
+    constructor(node: NodeRef, previous?: RelationshipPattern, path?: PathPattern) {
+        super(node, path);
         this.previous = previous;
-        this.patternQuantifier = patternQuantifier;
+    }
+
+    public rel(rel?: RelationshipRef): RelationshipPattern {
+        if (!rel) rel = new RelationshipRef();
+        return this.path!.addElement(new RelationshipPattern(rel, this, this.path)) as RelationshipPattern;
     }
 
     public withoutLabels(): this {
@@ -67,16 +60,10 @@ export class Pattern extends PatternElement<NodeRef> {
         return this;
     }
 
-    public related(rel?: RelationshipRef): PartialPattern {
-        if (!rel) rel = new RelationshipRef();
-        this.isFinal = false;
-        return new PartialPattern(rel, this.patternQuantifier, this);
-    }
-
     public getVariables(): Variable[] {
         const prevVars = this.previous?.getVariables() ?? [];
 
-        prevVars.push(this.element);
+        prevVars.push(this.reference);
         return prevVars;
     }
 
@@ -84,15 +71,11 @@ export class Pattern extends PatternElement<NodeRef> {
      * @internal
      */
     public getCypher(env: CypherEnvironment): string {
-        const startParenth = !this.previous ? '(' : "";
-        const endParenth = this.isFinal ? ')' : "";
-        const prevStr = this.previous?.getCypher(env) ?? "";
-        const nodeRefId = this.withVariable ? `${this.element.getCypher(env)}` : "";
+        const nodeRefId = this.withVariable ? `${this.reference.getCypher(env)}` : "";
         const propertiesStr = this.properties ? this.serializeParameters(this.properties, env) : "";
-        const nodeLabelStr = this.withLabels ? this.getNodeLabelsString(this.element, env) : "";
-        const quantifierStr = this.isFinal ? this.generateQuantifierStr() : "";
+        const nodeLabelStr = this.withLabels ? this.getNodeLabelsString(this.reference, env) : "";
 
-        return `${startParenth}${prevStr}(${nodeRefId}${nodeLabelStr}${propertiesStr})${endParenth}${quantifierStr}`;
+        return `(${nodeRefId}${nodeLabelStr}${propertiesStr})`;
     }
 
     private getNodeLabelsString(node: NodeRef, env: CypherEnvironment): string {
@@ -105,18 +88,6 @@ export class Pattern extends PatternElement<NodeRef> {
             const escapedLabels = labels.map(escapeLabel);
             if (escapedLabels.length === 0) return "";
             return `:${escapedLabels.join(":")}`;
-        }
-    }
-    private generateQuantifierStr(): string {
-        if (this.patternQuantifier === undefined) return "";
-        if (typeof this.patternQuantifier === "number") {
-            return `{${this.patternQuantifier}}`;
-        } else if (this.patternQuantifier === "*") {
-            return "*";
-        } else if (this.patternQuantifier === "+") {
-            return "+";
-        } else {
-            return `{${this.patternQuantifier.min ?? ""},${this.patternQuantifier.max ?? ""}}`;
         }
     }
 }

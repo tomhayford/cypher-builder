@@ -18,7 +18,7 @@
  */
 
 import type { CypherEnvironment } from "../Environment";
-import { Pattern } from "../pattern/Pattern";
+import { NodePattern } from "../pattern/NodePattern";
 import type { NodeRef } from "../references/NodeRef";
 import { compileCypherIfExists } from "../utils/compile-cypher-if-exists";
 import { Clause } from "./Clause";
@@ -40,14 +40,14 @@ export interface Create extends WithReturn, WithSet, WithPathAssign, WithWith, W
  */
 @mixin(WithReturn, WithSet, WithPathAssign, WithWith, WithDelete, WithRemove, WithMerge)
 export class Create extends Clause {
-    private pattern: Pattern;
+    private pattern: NodePattern;
 
-    constructor(pattern: NodeRef | Pattern) {
+    constructor(pattern: NodeRef | NodePattern) {
         super();
-        if (pattern instanceof Pattern) {
+        if (pattern instanceof NodePattern) {
             this.pattern = pattern;
         } else {
-            this.pattern = new Pattern(pattern);
+            this.pattern = new NodePattern(pattern);
         }
 
         this.setSubClause = new SetClause(this);
@@ -57,8 +57,8 @@ export class Create extends Clause {
      * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/clauses/create/)
      */
     public create(clause: Create): Create;
-    public create(pattern: NodeRef | Pattern): Create;
-    public create(clauseOrPattern: Create | NodeRef | Pattern): Create {
+    public create(pattern: NodeRef | NodePattern): Create;
+    public create(clauseOrPattern: Create | NodeRef | NodePattern): Create {
         if (clauseOrPattern instanceof Create) {
             this.addNextClause(clauseOrPattern);
             return clauseOrPattern;

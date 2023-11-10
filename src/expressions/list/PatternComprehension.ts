@@ -21,7 +21,7 @@ import { WithWhere } from "../../clauses/mixins/sub-clauses/WithWhere";
 import { mixin } from "../../clauses/utils/mixin";
 import { CypherASTNode } from "../../CypherASTNode";
 import type { CypherEnvironment } from "../../Environment";
-import { Pattern } from "../../pattern/Pattern";
+import { NodePattern } from "../../pattern/NodePattern";
 import type { NodeRef } from "../../references/NodeRef";
 import type { Expr } from "../../types";
 import { compileCypherIfExists } from "../../utils/compile-cypher-if-exists";
@@ -35,15 +35,15 @@ export interface PatternComprehension extends WithWhere {}
  */
 @mixin(WithWhere)
 export class PatternComprehension extends CypherASTNode {
-    private pattern: Pattern;
+    private pattern: NodePattern;
     private mapExpr: Expr | undefined;
 
-    constructor(pattern: Pattern | NodeRef, mapExpr?: Expr) {
+    constructor(pattern: NodePattern | NodeRef, mapExpr?: Expr) {
         super();
-        if (pattern instanceof Pattern) {
+        if (pattern instanceof NodePattern) {
             this.pattern = pattern;
         } else {
-            this.pattern = new Pattern(pattern);
+            this.pattern = new NodePattern(pattern);
         }
         this.mapExpr = mapExpr;
     }

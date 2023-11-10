@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import type { Path } from "../../Cypher";
+import type { PathRef } from "../../Cypher";
 import { CypherFunction } from "./CypherFunctions";
 
 /**
@@ -25,7 +25,7 @@ import { CypherFunction } from "./CypherFunctions";
  * @group Cypher Functions
  * @category Path
  */
-export function nodes(path: Path): CypherFunction {
+export function nodes(path: PathRef): CypherFunction {
     return new CypherFunction("nodes", [path]);
 }
 
@@ -34,6 +34,6 @@ export function nodes(path: Path): CypherFunction {
  * @group Cypher Functions
  * @category Path
  */
-export function relationships(path: Path): CypherFunction {
+export function relationships(path: PathRef): CypherFunction {
     return new CypherFunction("relationships", [path]);
 }

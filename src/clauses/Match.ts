@@ -18,7 +18,8 @@
  */
 
 import type { CypherEnvironment } from "../Environment";
-import { Pattern } from "../pattern/Pattern";
+import { NodePattern } from "../pattern/NodePattern";
+import { PathPattern } from "../pattern/PathPattern";
 import type { NodeRef } from "../references/NodeRef";
 import { compileCypherIfExists } from "../utils/compile-cypher-if-exists";
 import { Clause } from "./Clause";
@@ -63,15 +64,15 @@ export interface Match
     WithMerge
 )
 export class Match extends Clause {
-    private pattern: Pattern;
+    private pattern: NodePattern | PathPattern;
     private _optional = false;
 
-    constructor(pattern: NodeRef | Pattern) {
+    constructor(pattern: NodeRef | NodePattern | PathPattern) {
         super();
-        if (pattern instanceof Pattern) {
+        if (pattern instanceof NodePattern || pattern instanceof PathPattern) {
             this.pattern = pattern;
         } else {
-            this.pattern = new Pattern(pattern);
+            this.pattern = new NodePattern(pattern);
         }
     }
 
@@ -95,8 +96,8 @@ export class Match extends Clause {
      * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/clauses/match/)
      */
     public match(clause: Match): Match;
-    public match(pattern: NodeRef | Pattern): Match;
-    public match(clauseOrPattern: Match | NodeRef | Pattern): Match {
+    public match(pattern: NodeRef | NodePattern): Match;
+    public match(clauseOrPattern: Match | NodeRef | NodePattern): Match {
         if (clauseOrPattern instanceof Match) {
             this.addNextClause(clauseOrPattern);
             return clauseOrPattern;
@@ -111,7 +112,7 @@ export class Match extends Clause {
     /** Add an {@link OptionalMatch} clause
      * @see [Cypher Documentation](https://neo4j.com/docs/cypher-manual/current/clauses/optional-match/)
      */
-    public optionalMatch(pattern: NodeRef | Pattern): OptionalMatch {
+    public optionalMatch(pattern: NodeRef | NodePattern): OptionalMatch {
         const matchClause = new OptionalMatch(pattern);
         this.addNextClause(matchClause);
 
@@ -141,7 +142,7 @@ export class Match extends Clause {
  * @group Clauses
  */
 export class OptionalMatch extends Match {
-    constructor(pattern: NodeRef | Pattern) {
+    constructor(pattern: NodeRef | NodePattern) {
         super(pattern);
         this.optional();
     }

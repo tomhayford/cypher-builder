@@ -19,6 +19,7 @@
 
 import { CypherEnvironment } from "../Environment";
 import type { NodeProperties, NodeRef } from "../references/NodeRef";
+import type { PathPattern } from "./PathPattern";
 import type { RelationshipProperties, RelationshipRef } from "../references/RelationshipRef";
 import type { Variable } from "../references/Variable";
 import type { CypherCompilable } from "../types";
@@ -28,11 +29,13 @@ import { stringifyObject } from "../utils/stringify-object";
 
 const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
 
-export abstract class PatternElement<T extends NodeRef | RelationshipRef> implements CypherCompilable {
-    protected element: T;
+export abstract class PathElement<T extends NodeRef | RelationshipRef> implements CypherCompilable {
+    public reference: T;
+    public path: PathPattern | undefined;
 
-    constructor(element: T) {
-        this.element = element;
+    constructor(reference: T, path?: PathPattern) {
+        this.path = path;
+        this.reference = reference;
     }
 
     public abstract getCypher(env: CypherEnvironment): string;
@@ -59,6 +62,10 @@ export abstract class PatternElement<T extends NodeRef | RelationshipRef> implem
     public toString() {
         const cypher = padBlock(this.getCypher(new CypherEnvironment()));
         return `<${this.constructor.name}> """\n${cypher}\n"""`;
+    }
+
+    public getPath() {
+        return this.path;
     }
 
     /** Custom log for console.log in Node
